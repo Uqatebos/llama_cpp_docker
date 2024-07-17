@@ -1,0 +1,66 @@
+# version: '3.9'
+# services:
+#   llama:
+#     image: llama-cpp-docker
+#     environment:
+#       - GGML_CUDA_NO_PINNED=1
+#       - LLAMA_CTX_SIZE=2048
+#       - LLAMA_MODEL=/models/llama-2-7b-chat.Q4_K_M.gguf
+#       - LLAMA_N_GPU_LAYERS=99
+#     volumes:
+#       - ./models:/models
+#     ports:
+#       - target: 8080
+#         published: 8080
+#         mode: host
+
+# version: '3.8'
+
+# services:
+#   llama_server:
+#     image: ghcr.io/ggerganov/llama.cpp:server
+#     ports:
+#       - '8080:8080'
+#     volumes:
+#       - ./models:/models
+#     command:
+#       [
+#         '-m',
+#         'models/llama-2-7b-chat.Q4_K_M.gguf',
+#         '-c',
+#         '512',
+#         '--host',
+#         '0.0.0.0',
+#         '--port',
+#         '8080',
+#       ]
+
+version: '3.8'
+
+services:
+  llama_server:
+    image: ghcr.io/ggerganov/llama.cpp:server-cuda
+    ports:
+      - '8080:8080'
+    volumes:
+      - ./models:/models
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    command:
+      [
+        '-m',
+        'models/llama-2-7b-chat.Q4_K_M.gguf',
+        '-c',
+        '512',
+        '--host',
+        '0.0.0.0',
+        '--port',
+        '8080',
+        '--n-gpu-layers',
+        '99',
+      ]
